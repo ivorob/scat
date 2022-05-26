@@ -65,7 +65,7 @@ jobs:
     - name: Archive production artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: scat
+        name: scat-${{matrix.os}}
         path: |
           ${{github.workspace}}/build/scat
-          ${{github.workspace}}/build/$BUILD_TYPE/scat.exe
+          ${{github.workspace}}/build/${{env.BUILD_TYPE}}/scat.exe
