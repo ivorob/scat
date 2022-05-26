@@ -7,7 +7,7 @@ namespace {
 
 void usage(const std::string& application) {
     std::cerr << "usage:" << std::endl
-              << "\t" << fs::path(application).filename().native() << " testfile"
+              << "\t" << fs::path(application).filename().u8string() << " testfile"
               << std::endl;
 }
 
