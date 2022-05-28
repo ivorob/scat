@@ -1,14 +1,22 @@
 #include <iostream>
-#include <filesystem>
+#include <fstream>
 
-namespace fs = std::filesystem;
+#include "TestFileParser.h"
 
 namespace {
 
-void usage(const std::string& application) {
+void usage() {
     std::cerr << "usage:" << std::endl
-              << "\t" << fs::path(application).filename().u8string() << " testfile"
+              << "\t" << "scat testfile"
               << std::endl;
+}
+
+std::ostream& operator<<(std::ostream& output, const std::vector<std::string>& arguments) {
+    for (const auto& argument : arguments) {
+        output << argument << " ";
+    }
+
+    return output;
 }
 
 }
@@ -17,7 +25,22 @@ int
 main(int argc, char *argv[])
 {
     if (argc < 2) {
-        usage(argv[0]);
+        usage();
+        return EXIT_FAILURE;
+    }
+
+    std::ifstream input(argv[1]);
+    if (input.good()) {
+        Scat::TestFileParser testFileParser(input);
+
+        while (auto testCommand = testFileParser.parseNext()) {
+            std::cout << "Execute test command: " << testCommand->getName() 
+                      << std::endl
+                      << "\twith arguments: " << testCommand->getArguments()
+                      << std::endl;
+        }
+    } else {
+        std::cerr << "File isn't found: " << argv[1] << std::endl;
         return EXIT_FAILURE;
     }
 

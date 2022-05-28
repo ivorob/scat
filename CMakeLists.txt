@@ -2,8 +2,17 @@ CMAKE_MINIMUM_REQUIRED (VERSION 3.0)
 PROJECT (scat)
 
 SET (SRC_DIR src)
+SET (INCLUDE_DIR src)
 SET (SOURCES 
-        ${SRC_DIR}/main.cpp)
+        ${SRC_DIR}/main.cpp
+        ${SRC_DIR}/TestFileParser.cpp
+        ${SRC_DIR}/TestCommand.cpp
+    )
+
+SET (HEADERS
+        ${INCLUDE_DIR}/TestFileParser.h
+        ${INCLUDE_DIR}/TestCommand.h
+    )
 
 OPTION (BUILD_TESTING "Build testing" OFF)
 
