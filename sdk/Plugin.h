@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 #include <vector>
+#include <memory>
 
 namespace Scat {
 
@@ -17,5 +18,7 @@ public:
 private:
     const std::string name;
 };
+
+using PluginHolder = std::unique_ptr<Plugin>;
 
 }
