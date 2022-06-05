@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "TestFileParser.h"
+#include "InternalPluginFactory.h"
 
 namespace {
 
@@ -31,13 +32,19 @@ main(int argc, char *argv[])
 
     std::ifstream input(argv[1]);
     if (input.good()) {
-        Scat::TestFileParser testFileParser(input);
+        Scat::InternalPluginFactory internalPluginFactory;
 
+        Scat::TestFileParser testFileParser(input);
         while (auto testCommand = testFileParser.parseNext()) {
             std::cout << "Execute test command: " << testCommand->getName() 
                       << std::endl
                       << "\twith arguments: " << testCommand->getArguments()
                       << std::endl;
+
+            auto plugin = internalPluginFactory.create(testCommand->getName());
+            if (plugin) {
+                plugin->execute(testCommand->getArguments());
+            }
         }
     } else {
         std::cerr << "File isn't found: " << argv[1] << std::endl;
