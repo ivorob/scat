@@ -15,7 +15,7 @@ std::function<Scat::PluginHolder()> makeCreateFunction() {
     return createFunction;
 }
 
-auto unsupported = makeCreateFunction<Scat::PluginUnsupported>();
+const auto unsupported = makeCreateFunction<Scat::PluginUnsupported>();
 
 std::unordered_map<std::string, std::function<Scat::PluginHolder()>> createFunctions =
 {
