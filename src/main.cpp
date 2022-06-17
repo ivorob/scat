@@ -34,17 +34,28 @@ main(int argc, char *argv[])
     if (input.good()) {
         Scat::InternalPluginFactory internalPluginFactory;
 
+        std::cout << "[-----------]" << std::endl;
         Scat::TestFileParser testFileParser(input);
         while (auto testCommand = testFileParser.parseNext()) {
-            std::cout << "Execute test command: " << testCommand->getName() 
-                      << std::endl
-                      << "\twith arguments: " << testCommand->getArguments()
-                      << std::endl;
+            std::cout << "[ RUN       ] " << testCommand->getName() 
+                << " "
+                << testCommand->getArguments() << std::endl;
+
+            bool successExecuted = false;
 
             auto plugin = internalPluginFactory.create(testCommand->getName());
             if (plugin) {
-                plugin->execute(testCommand->getArguments());
+                std::cout << "[ CONTEXT   ]";
+                successExecuted = plugin->execute(testCommand->getArguments());
             }
+
+            if (successExecuted) {
+                std::cout << "[        OK ]" << std::endl;
+            } else {
+                std::cout << "[      FAIL ]" << std::endl;
+            }
+
+            std::cout << "[-----------]" << std::endl;
         }
     } else {
         std::cerr << "File isn't found: " << argv[1] << std::endl;
