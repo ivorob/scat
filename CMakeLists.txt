@@ -6,10 +6,12 @@ SET (INCLUDE_DIR src)
 SET (SOURCES 
         ${SRC_DIR}/main.cpp
         ${SRC_DIR}/TestFileParser.cpp
+        ${SRC_DIR}/TestFileParseException.cpp
     )
 
 SET (HEADERS
         ${INCLUDE_DIR}/TestFileParser.h
+        ${INCLUDE_DIR}/TestFileParseException.h
     )
 
 OPTION (BUILD_TESTING "Build testing" OFF)

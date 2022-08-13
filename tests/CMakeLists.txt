@@ -11,11 +11,13 @@ SET (SOURCES
         # main source files
         ${MAIN_SRC_DIR}/TestScenario.cpp
         ${MAIN_SRC_DIR}/TestFileParser.cpp
+        ${MAIN_SRC_DIR}/TestFileParseException.cpp
     )
 
 SET (HEADERS
         ${MAIN_SRC_DIR}/TestFileParser.h
         ${MAIN_SRC_DIR}/TestScenario.h
+        ${MAIN_SRC_DIR}/TestFileParseException.h
     )
 
 ADD_EXECUTABLE (tests ${SOURCES} ${HEADERS})
