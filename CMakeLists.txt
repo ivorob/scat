@@ -6,12 +6,10 @@ SET (INCLUDE_DIR src)
 SET (SOURCES 
         ${SRC_DIR}/main.cpp
         ${SRC_DIR}/TestFileParser.cpp
-        ${SRC_DIR}/TestCommand.cpp
     )
 
 SET (HEADERS
         ${INCLUDE_DIR}/TestFileParser.h
-        ${INCLUDE_DIR}/TestCommand.h
     )
 
 OPTION (BUILD_TESTING "Build testing" OFF)
@@ -30,4 +28,3 @@ IF (BUILD_TESTING)
 ENDIF ()
 
 ADD_EXECUTABLE (scat ${SOURCES})
-TARGET_LINK_LIBRARIES (scat InternalPlugins)

@@ -7,16 +7,15 @@ SET (SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET (INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 SET (SOURCES 
         tests.cpp
-        ${SRC_DIR}/TestCommandTest.cpp
         ${SRC_DIR}/TestFileParserTest.cpp
         # main source files
-        ${MAIN_SRC_DIR}/TestCommand.cpp
+        ${MAIN_SRC_DIR}/TestScenario.cpp
         ${MAIN_SRC_DIR}/TestFileParser.cpp
     )
 
 SET (HEADERS
-        ${MAIN_SRC_DIR}/TestCommand.h
         ${MAIN_SRC_DIR}/TestFileParser.h
+        ${MAIN_SRC_DIR}/TestScenario.h
     )
 
 ADD_EXECUTABLE (tests ${SOURCES} ${HEADERS})

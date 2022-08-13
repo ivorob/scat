@@ -3,7 +3,7 @@
 #include <istream>
 #include <optional>
 
-#include "TestCommand.h"
+#include "TestScenario.h"
 
 namespace Scat {
 
@@ -11,7 +11,7 @@ class TestFileParser {
 public:
     TestFileParser(std::istream& input);
 
-    std::optional<TestCommand> parseNext();
+    std::optional<TestScenario> parseNext();
 private:
     std::istream& input;
 };
