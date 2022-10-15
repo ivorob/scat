@@ -11,21 +11,42 @@ enum class ParseState {
     Error,
 };
 
-void makeToken(ParseState state, std::string& tokenName, std::list<Scat::Token>& tokens) {
-    if (tokenName.empty()) {
-        return;
-    }
+class ParseContext {
+public:
+    std::string tokenName;
+public:
+    void addSymbol(char currentSymbol);
+    void changeState(ParseState newState);
 
-    switch (state) {
+    void handleStreamSymbol(char currentSymbol);
+    void addToken();
+
+    const Scat::Tokens& getTokens() const;
+private:
+    void addToken(Scat::TokenId tokenId);
+    void clearToken();
+
+    ParseState getState() const;
+private:
+    Scat::Tokens tokens;
+    ParseState state = ParseState::Init;
+};
+
+void ParseContext::addSymbol(char currentSymbol) {
+    this->tokenName.push_back(currentSymbol);
+}
+
+void ParseContext::changeState(ParseState newState) {
+    this->state = newState;
+}
+
+void ParseContext::addToken() {
+    switch (this->state) {
         case ParseState::Id:
-            tokens.push_back(
-                Scat::Token(Scat::TokenId::Id, tokenName)
-            );
+            addToken(Scat::TokenId::Id);
             break;
         case ParseState::Description:
-            tokens.push_back(
-                Scat::Token(Scat::TokenId::Description, tokenName)
-            );
+            addToken(Scat::TokenId::Description);
             break;
         default:
             // Do nothing
@@ -33,29 +54,53 @@ void makeToken(ParseState state, std::string& tokenName, std::list<Scat::Token>&
     }
 }
 
-ParseState handleStreamSymbol(char currentSymbol, std::string& tokenName, std::list<Scat::Token>& tokens, ParseState state) {
-    switch (state) {
+void ParseContext::addToken(Scat::TokenId tokenId) {
+    if (!this->tokenName.empty()) {
+        this->tokens.push_back(
+            Scat::Token(tokenId, this->tokenName)
+        );
+
+        clearToken();
+    }
+}
+
+void ParseContext::clearToken() {
+    this->tokenName.clear();
+}
+
+ParseState ParseContext::getState() const {
+    return this->state;
+}
+
+const Scat::Tokens& ParseContext::getTokens() const {
+    return this->tokens;
+}
+
+void ParseContext::handleStreamSymbol(char currentSymbol) {
+    switch (getState()) {
         case ParseState::Init:
             if (std::isalpha(currentSymbol)) {
-                tokenName.push_back(currentSymbol);
-                return ParseState::Id;
-            } 
+                addSymbol(currentSymbol);
+                changeState(ParseState::Id);
+            } else {
+                changeState(ParseState::Error);
+            }
 
-            return ParseState::Error;
+            break;
         case ParseState::Id:
             if (std::isalpha(currentSymbol)) {
-                tokenName.push_back(currentSymbol);
+                addSymbol(currentSymbol);
             } else if (currentSymbol == ':') {
-                makeToken(state, tokenName, tokens);
+                addToken();
 
-                tokenName.clear();
-                return ParseState::StartDescription;
+                changeState(ParseState::StartDescription);
             }
             break;
         case ParseState::StartDescription:
             if (currentSymbol != ' ' && currentSymbol != '\t') {
-                tokenName.push_back(currentSymbol);
-                return ParseState::Description;
+                addSymbol(currentSymbol);
+
+                changeState(ParseState::Description);
             }
             break;
         case ParseState::Description:
@@ -70,11 +115,11 @@ ParseState handleStreamSymbol(char currentSymbol, std::string& tokenName, std::l
                 }
 
                 tokenName.erase(std::prev(it).base());
-                makeToken(state, tokenName, tokens);
+                addToken();
 
-                return ParseState::Spaces;
+                changeState(ParseState::Spaces);
             } else {
-                tokenName.push_back(currentSymbol);
+                addSymbol(currentSymbol);
             }
             break;
         case ParseState::Spaces:
@@ -83,8 +128,6 @@ ParseState handleStreamSymbol(char currentSymbol, std::string& tokenName, std::l
         default:
             throw std::runtime_error("Cannot parse scenario");
     }
-
-    return state;
 }
 
 }
@@ -96,16 +139,13 @@ Scat::ScenarioTokenizer::ScenarioTokenizer(std::istream& input)
 }
 
 std::list<Scat::Token> Scat::ScenarioTokenizer::tokenize() {
-    std::list<Scat::Token> tokens;
-
-    ParseState state = ParseState::Init;
+    ParseContext parseContext;
     char currentSymbol;
-    std::string tokenName;
     while (input >> currentSymbol) {
-        state = handleStreamSymbol(currentSymbol, tokenName, tokens, state);
+        parseContext.handleStreamSymbol(currentSymbol);
     }
 
-    makeToken(state, tokenName, tokens);
-    return tokens;
+    parseContext.addToken();
+    return parseContext.getTokens();
 }
 

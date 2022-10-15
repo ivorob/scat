@@ -8,11 +8,13 @@
 
 namespace Scat {
 
+using Tokens = std::list<Token>;
+
 class ScenarioTokenizer {
 public:
     ScenarioTokenizer(std::istream& input);
 
-    std::list<Token> tokenize();
+    Tokens tokenize();
 private:
 
 private:
