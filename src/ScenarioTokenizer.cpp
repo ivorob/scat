@@ -7,7 +7,6 @@ enum class ParseState {
     Id,
     StartDescription,
     Description,
-    Spaces,
     Error,
 };
 
@@ -25,6 +24,7 @@ public:
 private:
     void addToken(Scat::TokenId tokenId);
     void clearToken();
+    void trimToken();
 
     ParseState getState() const;
 private:
@@ -56,6 +56,8 @@ void ParseContext::addToken() {
 
 void ParseContext::addToken(Scat::TokenId tokenId) {
     if (!this->tokenName.empty()) {
+        trimToken();
+
         this->tokens.push_back(
             Scat::Token(tokenId, this->tokenName)
         );
@@ -66,6 +68,19 @@ void ParseContext::addToken(Scat::TokenId tokenId) {
 
 void ParseContext::clearToken() {
     this->tokenName.clear();
+}
+
+void ParseContext::trimToken() {
+    auto it = tokenName.rbegin();
+    while (it != tokenName.rend()) {
+        if (*it != '\r' && *it != ' ' && *it != '\t') {
+            break;
+        }
+
+        ++it;
+    }
+
+    tokenName.erase(it.base(), tokenName.end());
 }
 
 ParseState ParseContext::getState() const {
@@ -82,7 +97,7 @@ void ParseContext::handleStreamSymbol(char currentSymbol) {
             if (std::isalpha(currentSymbol)) {
                 addSymbol(currentSymbol);
                 changeState(ParseState::Id);
-            } else {
+            } else if (!std::isspace(currentSymbol)) {
                 changeState(ParseState::Error);
             }
 
@@ -105,24 +120,12 @@ void ParseContext::handleStreamSymbol(char currentSymbol) {
             break;
         case ParseState::Description:
             if (currentSymbol == '\n') {
-                auto it = tokenName.rbegin();
-                while (it != tokenName.rend()) {
-                    if (*it != '\r' && *it != ' ' && *it != '\t') {
-                        break;
-                    }
-
-                    ++it;
-                }
-
-                tokenName.erase(std::prev(it).base());
                 addToken();
 
-                changeState(ParseState::Spaces);
+                changeState(ParseState::Init);
             } else {
                 addSymbol(currentSymbol);
             }
-            break;
-        case ParseState::Spaces:
             break;
         case ParseState::Error:
         default:
