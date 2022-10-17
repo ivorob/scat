@@ -1,0 +1,4 @@
+Scenario: Install package
+Given: Clean machine
+When: Execute installation for package
+Then: Packages files are present

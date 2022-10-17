@@ -1,3 +1,0 @@
-download        http://link.com/test.pkg         filename.pkg
-
-execute install         filename.pkg -target /
