@@ -5,6 +5,7 @@ namespace {
 enum class ParseState {
     Init,
     Id,
+    IdSpace,
     StartDescription,
     Description,
     Error,
@@ -12,15 +13,13 @@ enum class ParseState {
 
 class ParseContext {
 public:
-    std::string tokenName;
-public:
     void addSymbol(char currentSymbol);
     void changeState(ParseState newState);
 
     void handleStreamSymbol(char currentSymbol);
     void addToken();
 
-    const Scat::Tokens& getTokens() const;
+    Scat::Tokens extractTokens();
 private:
     void addToken(Scat::TokenId tokenId);
     void clearToken();
@@ -28,6 +27,7 @@ private:
 
     ParseState getState() const;
 private:
+    std::string tokenName;
     Scat::Tokens tokens;
     ParseState state = ParseState::Init;
 };
@@ -43,6 +43,7 @@ void ParseContext::changeState(ParseState newState) {
 void ParseContext::addToken() {
     switch (this->state) {
         case ParseState::Id:
+        case ParseState::IdSpace:
             addToken(Scat::TokenId::Id);
             break;
         case ParseState::Description:
@@ -87,8 +88,8 @@ ParseState ParseContext::getState() const {
     return this->state;
 }
 
-const Scat::Tokens& ParseContext::getTokens() const {
-    return this->tokens;
+Scat::Tokens ParseContext::extractTokens() {
+    return std::move(this->tokens);
 }
 
 void ParseContext::handleStreamSymbol(char currentSymbol) {
@@ -109,6 +110,18 @@ void ParseContext::handleStreamSymbol(char currentSymbol) {
                 addToken();
 
                 changeState(ParseState::StartDescription);
+            } else if (std::isspace(currentSymbol)) {
+                changeState(ParseState::IdSpace);
+            }
+
+            break;
+        case ParseState::IdSpace:
+            if (currentSymbol == ':') {
+                addToken();
+
+                changeState(ParseState::StartDescription);
+            } else if (!std::isspace(currentSymbol)) {
+                changeState(ParseState::Error);
             }
             break;
         case ParseState::StartDescription:
@@ -149,6 +162,6 @@ std::list<Scat::Token> Scat::ScenarioTokenizer::tokenize() {
     }
 
     parseContext.addToken();
-    return parseContext.getTokens();
+    return parseContext.extractTokens();
 }
 

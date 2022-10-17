@@ -24,6 +24,8 @@ TEST(TestFileParserTest, parse_invalid_scenario_generates_exception)
             auto testScenario = testFileParser.parseNext();
         } catch (const Scat::TestFileParseException& e) {
             return e;
+        } catch (const std::exception& e) {
+            std::cout << e.what() << std::endl;
         }
 
         return std::nullopt;
@@ -38,4 +40,23 @@ TEST(TestFileParserTest, parse_invalid_scenario_generates_exception)
             "Text: \"invalid scenario\"."), 
         exception->what()
     );
+}
+
+TEST(TestFileParserTest, valid_scenario_is_parsed_successfully) {
+    // Arrange
+    std::stringstream input(R"(Scenario: Install package
+                               Given: Clean machine
+                               When: Execute installation for package
+                               Then: Packages files are present)");
+    Scat::TestFileParser parser(input);
+
+    // Act
+    auto testScenario = parser.parseNext();
+
+    // Assert
+    ASSERT_TRUE(testScenario);
+    ASSERT_EQ("Install package", testScenario->getDescription());
+    ASSERT_EQ("Clean machine", testScenario->getGiven());
+    ASSERT_EQ("Execute installation for package", testScenario->getWhen());
+    ASSERT_EQ("Packages files are present", testScenario->getThen());
 }
