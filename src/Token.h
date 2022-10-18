@@ -6,7 +6,8 @@ namespace Scat {
 
 enum class TokenId { 
     Id, 
-    Description
+    Description,
+    Command
 };
 
 class Token {

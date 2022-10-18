@@ -114,3 +114,66 @@ TEST(ScenarioTokenizerTest, parsing_a_few_identifier_is_succeeded) {
     };
     ASSERT_EQ(expectedTokens, tokens);
 }
+
+TEST(ScenarioTokenizerTest, parsing_description_with_command_is_succeeded) {
+    // Arrange
+    std::stringstream input("newid : some condition #execute(\"ls -l /tmp\") is ok");
+    Scat::ScenarioTokenizer tokenizer(input);
+
+    // Act
+    auto tokens = tokenizer.tokenize();
+
+    // Assert
+    ASSERT_EQ(4, tokens.size());
+
+    Scat::Tokens expectedTokens = {
+        Scat::Token(Scat::TokenId::Id, "newid"),
+        Scat::Token(Scat::TokenId::Description, "some condition "),
+        Scat::Token(Scat::TokenId::Command, R"(execute("ls -l /tmp"))"),
+        Scat::Token(Scat::TokenId::Description, " is ok")
+    };
+
+    ASSERT_EQ(expectedTokens, tokens);
+}
+
+TEST(ScenarioTokenizerTest, parsing_description_with_invalid_command_throw_exception) {
+    // Arrange
+    std::stringstream input("newid : some condition #execute is ok");
+    Scat::ScenarioTokenizer tokenizer(input);
+
+    // Act
+    bool hasException = [&tokenizer]() -> bool {
+        try {
+            auto tokens = tokenizer.tokenize();
+        } catch (...) {
+            return true;
+        }
+
+        return false;
+    }();
+
+    // Assert
+    ASSERT_TRUE(hasException);
+}
+
+// this test case will be handled not here
+TEST(ScenarioTokenizerTest, parsing_command_with_invalid_arguments_is_succeeded) {
+    // Arrange
+    std::stringstream input("newid : some condition #execute(\"ls -l /tmp) is ok");
+    Scat::ScenarioTokenizer tokenizer(input);
+
+    // Act
+    auto tokens = tokenizer.tokenize();
+
+    // Assert
+    ASSERT_EQ(4, tokens.size());
+
+    Scat::Tokens expectedTokens = {
+        Scat::Token(Scat::TokenId::Id, "newid"),
+        Scat::Token(Scat::TokenId::Description, "some condition "),
+        Scat::Token(Scat::TokenId::Command, R"(execute("ls -l /tmp))"),
+        Scat::Token(Scat::TokenId::Description, " is ok")
+    };
+
+    ASSERT_EQ(expectedTokens, tokens);
+}

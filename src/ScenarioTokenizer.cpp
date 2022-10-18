@@ -1,3 +1,5 @@
+#include <functional>
+
 #include "ScenarioTokenizer.h"
 
 namespace {
@@ -8,8 +10,12 @@ enum class ParseState {
     IdSpace,
     StartDescription,
     Description,
+    Command,
+    CommandArguments,
     Error,
 };
+
+static std::function<void()> emptyFunction = []{};
 
 class ParseContext {
 public:
@@ -17,13 +23,14 @@ public:
     void changeState(ParseState newState);
 
     void handleStreamSymbol(char currentSymbol);
-    void addToken();
+    void addTokenRightTrim();
+    void addToken(std::function<void()> preprocess = emptyFunction);
 
     Scat::Tokens extractTokens();
 private:
-    void addToken(Scat::TokenId tokenId);
+    void addToken(Scat::TokenId tokenId, std::function<void()> preprocess);
     void clearToken();
-    void trimToken();
+    void rightTrimToken();
 
     ParseState getState() const;
 private:
@@ -40,14 +47,21 @@ void ParseContext::changeState(ParseState newState) {
     this->state = newState;
 }
 
-void ParseContext::addToken() {
+void ParseContext::addTokenRightTrim() {
+    addToken(std::bind(&ParseContext::rightTrimToken, this));
+}
+
+void ParseContext::addToken(std::function<void()> preprocess) {
     switch (this->state) {
         case ParseState::Id:
         case ParseState::IdSpace:
-            addToken(Scat::TokenId::Id);
+            addToken(Scat::TokenId::Id, preprocess);
             break;
         case ParseState::Description:
-            addToken(Scat::TokenId::Description);
+            addToken(Scat::TokenId::Description, preprocess);
+            break;
+        case ParseState::CommandArguments:
+            addToken(Scat::TokenId::Command, preprocess);
             break;
         default:
             // Do nothing
@@ -55,9 +69,9 @@ void ParseContext::addToken() {
     }
 }
 
-void ParseContext::addToken(Scat::TokenId tokenId) {
+void ParseContext::addToken(Scat::TokenId tokenId, std::function<void()> preprocess) {
     if (!this->tokenName.empty()) {
-        trimToken();
+        preprocess();
 
         this->tokens.push_back(
             Scat::Token(tokenId, this->tokenName)
@@ -71,17 +85,10 @@ void ParseContext::clearToken() {
     this->tokenName.clear();
 }
 
-void ParseContext::trimToken() {
-    auto it = tokenName.rbegin();
-    while (it != tokenName.rend()) {
-        if (*it != '\r' && *it != ' ' && *it != '\t') {
-            break;
-        }
-
-        ++it;
-    }
-
-    tokenName.erase(it.base(), tokenName.end());
+void ParseContext::rightTrimToken() {
+    tokenName.erase(std::find_if(tokenName.rbegin(), tokenName.rend(), [](char letter) {
+        return letter != '\r' && letter != ' ' && letter != '\t';
+    }).base(), tokenName.end());
 }
 
 ParseState ParseContext::getState() const {
@@ -133,9 +140,36 @@ void ParseContext::handleStreamSymbol(char currentSymbol) {
             break;
         case ParseState::Description:
             if (currentSymbol == '\n') {
-                addToken();
+                addTokenRightTrim();
 
                 changeState(ParseState::Init);
+            } else if (currentSymbol == '#') {
+                addToken();
+
+                changeState(ParseState::Command);
+            } else {
+                addSymbol(currentSymbol);
+            }
+            break;
+        case ParseState::Command:
+            if (std::isalnum(currentSymbol)) {
+                addSymbol(currentSymbol);
+            } else if (currentSymbol == '(') {
+                addSymbol(currentSymbol);
+
+                changeState(ParseState::CommandArguments);
+            } else {
+                changeState(ParseState::Error);
+            }
+            break;
+        case ParseState::CommandArguments:
+            if (currentSymbol == '\n') {
+                changeState(ParseState::Error);
+            } else if (currentSymbol == ')') {
+                addSymbol(currentSymbol);
+
+                addToken();
+                changeState(ParseState::Description);
             } else {
                 addSymbol(currentSymbol);
             }
@@ -161,7 +195,7 @@ std::list<Scat::Token> Scat::ScenarioTokenizer::tokenize() {
         parseContext.handleStreamSymbol(currentSymbol);
     }
 
-    parseContext.addToken();
+    parseContext.addTokenRightTrim();
     return parseContext.extractTokens();
 }
 
