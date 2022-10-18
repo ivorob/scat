@@ -34,3 +34,8 @@ Example of executing scenario:
 [         OK ]
 [------------]
 ```
+
+## TODO
+
+* Add test case with command parsing for TestFileParser;
+* Add test case with command parsing in Scenario for TestFileParser (ignore command in Scenario).
