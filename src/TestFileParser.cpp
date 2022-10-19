@@ -13,7 +13,7 @@ std::unordered_map<Scat::TokenId, std::unordered_set<Scat::TokenId>> tokensTrans
     { Scat::TokenId::None, { Scat::TokenId::Id } },
     { Scat::TokenId::Id, { Scat::TokenId::Command, Scat::TokenId::Description } },
     { Scat::TokenId::Description, { Scat::TokenId::Command, Scat::TokenId::Id } },
-    { Scat::TokenId::Command, { Scat::TokenId::Description } }
+    { Scat::TokenId::Command, { Scat::TokenId::Description, Scat::TokenId::Id } }
 };
 
 }

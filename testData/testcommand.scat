@@ -1,5 +1,5 @@
 Scenario: Install package
 Given: There is clean machine
-When: #execute("install test.pkg -target /") is succeeded
+When: We #execute("install test.pkg -target /")
 Then: Packages files are present)
 
