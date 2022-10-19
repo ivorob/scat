@@ -177,3 +177,27 @@ TEST(ScenarioTokenizerTest, parsing_command_with_invalid_arguments_is_succeeded)
 
     ASSERT_EQ(expectedTokens, tokens);
 }
+
+TEST(ScenarioTokenizerTest, parsing_command_at_beginnig_of_description_is_succeeded) {
+    // Arrange
+    std::stringstream input(R"(Scenario: Install package
+                               When: #execute("install test.pkg -target /") is succeeded)");
+    Scat::ScenarioTokenizer tokenizer(input);
+
+    // Act
+    auto tokens = tokenizer.tokenize();
+
+    // Assert
+    ASSERT_EQ(5, tokens.size());
+
+    Scat::Tokens expectedTokens = {
+        Scat::Token(Scat::TokenId::Id, "Scenario"),
+        Scat::Token(Scat::TokenId::Description, "Install package"),
+        Scat::Token(Scat::TokenId::Id, "When"),
+        Scat::Token(Scat::TokenId::Command, R"(execute("install test.pkg -target /"))"),
+        Scat::Token(Scat::TokenId::Description, " is succeeded")
+    };
+
+    ASSERT_EQ(expectedTokens, tokens);
+
+}

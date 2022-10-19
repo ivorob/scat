@@ -60,3 +60,22 @@ TEST(TestFileParserTest, valid_scenario_is_parsed_successfully) {
     ASSERT_EQ("Execute installation for package", testScenario->getWhen());
     ASSERT_EQ("Packages files are present", testScenario->getThen());
 }
+
+TEST(TestFileParserTest, scenario_with_command_is_parsed_successfully) {
+    // Arrange
+    std::stringstream input(R"(Scenario: Install package
+                               Given: There is clean machine
+                               When: #execute("install test.pkg -target /") is succeeded
+                               Then: Packages files are present)");
+    Scat::TestFileParser parser(input);
+
+    // Act
+    auto testScenario = parser.parseNext();
+
+    // Assert
+    ASSERT_TRUE(testScenario);
+    ASSERT_EQ("Install package", testScenario->getDescription());
+    ASSERT_EQ("There is clean machine", testScenario->getGiven());
+    ASSERT_EQ(R"(#execute("install test.pkg -target /") is succeeded)", testScenario->getWhen());
+    ASSERT_EQ("Packages files are present", testScenario->getThen());
+}

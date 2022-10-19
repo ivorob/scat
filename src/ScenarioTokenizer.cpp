@@ -132,7 +132,11 @@ void ParseContext::handleStreamSymbol(char currentSymbol) {
             }
             break;
         case ParseState::StartDescription:
-            if (currentSymbol != ' ' && currentSymbol != '\t') {
+            if (currentSymbol == '#') {
+                addToken();
+
+                changeState(ParseState::Command);
+            } else if (currentSymbol != ' ' && currentSymbol != '\t') {
                 addSymbol(currentSymbol);
 
                 changeState(ParseState::Description);
