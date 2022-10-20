@@ -38,5 +38,4 @@ Example of executing scenario:
 ## TODO
 
 * Add test case with command parsing in Scenario for TestFileParser (ignore command in Scenario);
-* Refactoring for ParseContext class - transform to State pattern;
 * Keep line and symbol for parsing issues.
