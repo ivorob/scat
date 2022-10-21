@@ -4,18 +4,18 @@ Simple constructor for acceptance tests
 
 [![scat](https://github.com/ivorob/scat/actions/workflows/cmake.yml/badge.svg)](https://github.com/ivorob/scat/actions)
 
-Новая концепция тестов:
-* Тестовый файл может содержать один сценарий;
-* Сценарий имеет следующий вид:
+New conception of tests:
+* Test file can contain only one scenario;
+* Test scenario looks like as the following:
   ```
-  Scenario: Описывает реализуемый сценарий
-  Given: Начальные условия
-  When: Действие, запускающее сценарий
-  Then: Результат
+  Scenario: Scenario description
+  Given: Initial condition
+  When: Action, trigger
+  Then: The result
   ```
-* Ключевое слово Given - опциональный элемент сценария;
-* В сценарии возможно использовать ключевое слово And для комбинации условий;
-* В разделе Given можно ссылаться на другие тесты, создавая зависимости, для это следует использовать следующую маску #ref("<имя файла сценария>"). 
+* The keyword _Given_ is the optional item of scenario;
+* There is ability to use keyword _And_ inside of scenario to make combination of conditions;
+* There is ability to make references to another test scenarios using the following command: `#ref("<name of scenario">)`.
 
 ## Usage
 ```
@@ -34,8 +34,23 @@ Example of executing scenario:
 [         OK ]
 [------------]
 ```
+Example of executing scenario with command in it:
+```
+[   Scenario ]	Install package
+[------------]	----------------------------------
+[      Given ]	There is clean machine
+[       When ]	We #execute("install test.pkg -target /")
+[       Then ]	Packages files are present)
+[ RUN        ]
+[         OK ]
+[------------]
+```
 
 ## TODO
 
+* Parse command;
+* Execute scenario with command;
+* Run plugin on executing scenario with command;
+* Plugin for running OS command;
 * Add test case with command parsing in Scenario for TestFileParser (ignore command in Scenario);
 * Keep line and symbol for parsing issues.
