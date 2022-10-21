@@ -1,5 +1,6 @@
 #include <functional>
 #include <unordered_map>
+#include <memory>
 
 #include "ScenarioTokenizer.h"
 
