@@ -50,6 +50,7 @@ Example of executing scenario with command in it:
 
 * Parse command;
 * Execute scenario with command;
+* Implement support of keyword _And_;
 * Run plugin on executing scenario with command;
 * Plugin for running OS command;
 * Add test case with command parsing in Scenario for TestFileParser (ignore command in Scenario);
