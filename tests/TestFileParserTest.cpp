@@ -79,3 +79,26 @@ TEST(TestFileParserTest, scenario_with_command_is_parsed_successfully) {
     ASSERT_EQ(R"(#execute("install test.pkg -target /") is succeeded)", testScenario->getWhen());
     ASSERT_EQ("Packages files are present", testScenario->getThen());
 }
+
+TEST(TestFileParserTest, parsing_scenario_with_two_commands_in_the_same_description_is_failed) {
+    // Arrange
+    std::stringstream input(R"(Scenarion: Install package
+                               Given: There is clean machine
+                               When: #execute("id") #execute("whoami")
+                               Then: Packages: files are present)");
+    Scat::TestFileParser testFileParser(input);
+
+    // Act
+    auto exception = [&testFileParser]() -> std::optional<Scat::TestFileParseException> {
+        try {
+            auto testScenario = testFileParser.parseNext();
+        } catch (const Scat::TestFileParseException& e) {
+            return e;
+        }
+
+        return std::nullopt;
+    }();
+
+    // Assert
+    ASSERT_TRUE(exception);
+}
